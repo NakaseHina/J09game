@@ -2,104 +2,128 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>連打バトル</title>
+  <title>キー連打対戦ゲーム</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
-      background: #f2f2f2;
+      background: #f0f8ff;
     }
-    #tapBtn {
-      font-size: 40px;
-      padding: 30px 60px;
-      margin: 20px;
-      cursor: pointer;
+
+    .container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 40px;
     }
-    #timer {
-      font-size: 28px;
+
+    .player {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 40%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    #info {
-      font-size: 22px;
-    }
-    #count {
-      font-size: 24px;
+
+    #startBtn {
+      font-size: 20px;
+      padding: 10px 30px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-  <h1>連打バトル</h1>
+<h1>⌨ キー連打対戦ゲーム</h1>
+<p>残り時間：<span id="time">10</span> 秒</p>
 
-  <div id="info">プレイヤー1の番です</div>
-  <div id="timer">残り時間：5</div>
-  <div id="count">連打数：0</div>
+<p>プレイヤー1：Aキー連打<br>
+プレイヤー2：Lキー連打</p>
 
-  <button id="tapBtn">連打！</button>
+<button id="startBtn">スタート</button>
 
-  <h2 id="result"></h2>
+<div class="container">
+  <div class="player">
+    <h2>プレイヤー1</h2>
+    <p>スコア：<span id="score1">0</span></p>
+  </div>
 
-  <script>
-    let player = 1;
-    let count1 = 0;
-    let count2 = 0;
-    let currentCount = 0;
-    let time = 5;
-    let timerId;
+  <div class="player">
+    <h2>プレイヤー2</h2>
+    <p>スコア：<span id="score2">0</span></p>
+  </div>
+</div>
 
-    const info = document.getElementById("info");
-    const timer = document.getElementById("timer");
-    const count = document.getElementById("count");
-    const btn = document.getElementById("tapBtn");
-    const result = document.getElementById("result");
+<script>
+  let time = 10;
+  let playing = false;
+  let score1 = 0;
+  let score2 = 0;
+  let timer = null;
 
-    btn.onclick = () => {
-      currentCount++;
-      count.textContent = "連打数：" + currentCount;
-    };
+  const timeText = document.getElementById("time");
+  const score1Text = document.getElementById("score1");
+  const score2Text = document.getElementById("score2");
+  const startBtn = document.getElementById("startBtn");
 
-    function startTurn() {
-      currentCount = 0;
-      time = 5;
-      count.textContent = "連打数：0";
-      timer.textContent = "残り時間：" + time;
-      info.textContent = "プレイヤー" + player + "の番です";
+  function startGame() {
+    time = 10;
+    score1 = 0;
+    score2 = 0;
+    playing = true;
 
-      timerId = setInterval(() => {
-        time--;
-        timer.textContent = "残り時間：" + time;
+    timeText.textContent = time;
+    score1Text.textContent = score1;
+    score2Text.textContent = score2;
 
-        if (time <= 0) {
-          clearInterval(timerId);
-          endTurn();
-        }
-      }, 1000);
-    }
+    startBtn.disabled = true;
 
-    function endTurn() {
-      if (player === 1) {
-        count1 = currentCount;
-        player = 2;
-        startTurn();
-      } else {
-        count2 = currentCount;
-        showResult();
+    timer = setInterval(() => {
+      time--;
+      timeText.textContent = time;
+
+      if (time <= 0) {
+        endGame();
       }
+    }, 1000);
+  }
+
+  function endGame() {
+    playing = false;
+    clearInterval(timer);
+    startBtn.disabled = false;
+
+    let result;
+    if (score1 > score2) result = "🏆 プレイヤー1の勝ち！";
+    else if (score2 > score1) result = "🏆 プレイヤー2の勝ち！";
+    else result = "🤝 引き分け！";
+
+    alert(`終了！\nプレイヤー1: ${score1}\nプレイヤー2: ${score2}\n\n${result}`);
+  }
+
+  // キー入力処理
+  document.addEventListener("keydown", (e) => {
+    if (!playing) return;
+
+    if (e.key === "a" || e.key === "A") {
+      score1++;
+      score1Text.textContent = score1;
     }
 
-    function showResult() {
-      info.textContent = "結果発表！";
-      result.innerHTML =
-        "プレイヤー1：" + count1 + "回<br>" +
-        "プレイヤー2：" + count2 + "回<br><br>" +
-        (count1 > count2 ? "🎉 プレイヤー1の勝ち！" :
-         count1 < count2 ? "🎉 プレイヤー2の勝ち！" :
-         "🤝 引き分け！");
-      btn.disabled = true;
+    if (e.key === "l" || e.key === "L") {
+      score2++;
+      score2Text.textContent = score2;
     }
+  });
 
-    // ゲーム開始
-    startTurn();
-  </script>
+  startBtn.onclick = startGame;
+
+  // Enterキーでもスタートできる
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !playing) {
+      startGame();
+    }
+  });
+</script>
 
 </body>
 </html>
