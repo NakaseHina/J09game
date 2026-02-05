@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>連打バトル</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+    }
+    #tapBtn {
+      font-size: 40px;
+      padding: 30px 60px;
+      margin: 20px;
+      cursor: pointer;
+    }
+    #timer {
+      font-size: 28px;
+    }
+    #info {
+      font-size: 22px;
+    }
+    #count {
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>連打バトル</h1>
+
+  <div id="info">プレイヤー1の番です</div>
+  <div id="timer">残り時間：5</div>
+  <div id="count">連打数：0</div>
+
+  <button id="tapBtn">連打！</button>
+
+  <h2 id="result"></h2>
+
+  <script>
+    let player = 1;
+    let count1 = 0;
+    let count2 = 0;
+    let currentCount = 0;
+    let time = 5;
+    let timerId;
+
+    const info = document.getElementById("info");
+    const timer = document.getElementById("timer");
+    const count = document.getElementById("count");
+    const btn = document.getElementById("tapBtn");
+    const result = document.getElementById("result");
+
+    btn.onclick = () => {
+      currentCount++;
+      count.textContent = "連打数：" + currentCount;
+    };
+
+    function startTurn() {
+      currentCount = 0;
+      time = 5;
+      count.textContent = "連打数：0";
+      timer.textContent = "残り時間：" + time;
+      info.textContent = "プレイヤー" + player + "の番です";
+
+      timerId = setInterval(() => {
+        time--;
+        timer.textContent = "残り時間：" + time;
+
+        if (time <= 0) {
+          clearInterval(timerId);
+          endTurn();
+        }
+      }, 1000);
+    }
+
+    function endTurn() {
+      if (player === 1) {
+        count1 = currentCount;
+        player = 2;
+        startTurn();
+      } else {
+        count2 = currentCount;
+        showResult();
+      }
+    }
+
+    function showResult() {
+      info.textContent = "結果発表！";
+      result.innerHTML =
+        "プレイヤー1：" + count1 + "回<br>" +
+        "プレイヤー2：" + count2 + "回<br><br>" +
+        (count1 > count2 ? "🎉 プレイヤー1の勝ち！" :
+         count1 < count2 ? "🎉 プレイヤー2の勝ち！" :
+         "🤝 引き分け！");
+      btn.disabled = true;
+    }
+
+    // ゲーム開始
+    startTurn();
+  </script>
+
+</body>
+</html>
