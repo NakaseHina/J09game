@@ -121,6 +121,17 @@
     background: linear-gradient(90deg,#ff0,#f80);
     cursor: pointer;
   }
+
+  #closeBtn {
+    font-size: 22px;
+    padding: 10px 40px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(90deg,#888,#444);
+    color: white;
+    cursor: pointer;
+    margin-left: 20px;
+  }
 </style>
 </head>
 <body>
@@ -152,7 +163,10 @@
 <div id="resultScreen">
   <h2 id="resultTitle"></h2>
   <p id="resultScore"></p>
-  <button id="restartBtn">RESTART</button>
+  <div>
+    <button id="restartBtn">RESTART</button>
+    <button id="closeBtn">CLOSE</button>
+  </div>
 </div>
 
 <script>
@@ -177,6 +191,7 @@ const resultScreen = document.getElementById("resultScreen");
 const resultTitle = document.getElementById("resultTitle");
 const resultScore = document.getElementById("resultScore");
 const restartBtn = document.getElementById("restartBtn");
+const closeBtn = document.getElementById("closeBtn");
 
 function startGameWithCountdown() {
   startBtn.disabled = true;
@@ -272,6 +287,9 @@ document.addEventListener("keydown", e => {
 
 startBtn.onclick = startGameWithCountdown;
 restartBtn.onclick = startGameWithCountdown;
+closeBtn.onclick = () => {
+  resultScreen.style.display = "none";
+};
 </script>
 
 </body>
