@@ -1,128 +1,195 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>キー連打対戦ゲーム</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f0f8ff;
-    }
+<meta charset="UTF-8">
+<title>キー連打バトル</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #222 0%, #000 70%);
+    color: white;
+    text-align: center;
+  }
 
-    .container {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 40px;
-    }
+  h1 {
+    margin-top: 20px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px #0ff;
+  }
 
-    .player {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 40%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+  #info {
+    margin-top: 10px;
+    font-size: 18px;
+  }
 
-    #startBtn {
-      font-size: 20px;
-      padding: 10px 30px;
-      margin-top: 20px;
-    }
-  </style>
+  #time {
+    font-size: 40px;
+    color: #ff0;
+    text-shadow: 0 0 10px #ff0;
+  }
+
+  .arena {
+    display: flex;
+    justify-content: space-between;
+    margin: 60px;
+  }
+
+  .player {
+    width: 40%;
+    border: 3px solid #555;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,255,255,0.3);
+  }
+
+  .p1 { border-color: #ff4444; box-shadow: 0 0 20px rgba(255,0,0,0.6); }
+  .p2 { border-color: #4488ff; box-shadow: 0 0 20px rgba(0,128,255,0.6); }
+
+  .name {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .score {
+    font-size: 30px;
+  }
+
+  .bar {
+    width: 100%;
+    height: 25px;
+    background: #333;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+
+  .fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  .fill1 { background: linear-gradient(90deg,#ff0000,#ffaa00); }
+  .fill2 { background: linear-gradient(90deg,#00aaff,#00ffea); }
+
+  #startBtn {
+    margin-top: 30px;
+    font-size: 22px;
+    padding: 10px 40px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(90deg,#0ff,#0f0);
+    cursor: pointer;
+  }
+
+  #message {
+    margin-top: 30px;
+    font-size: 28px;
+    text-shadow: 0 0 10px #fff;
+  }
+</style>
 </head>
 <body>
 
-<h1>⌨ キー連打対戦ゲーム</h1>
-<p>残り時間：<span id="time">10</span> 秒</p>
+<h1>KEY RAPID BATTLE</h1>
+<div id="info">
+  プレイヤー1：Aキー ／ プレイヤー2：Lキー
+</div>
+<div id="time">10</div>
 
-<p>プレイヤー1：Aキー連打<br>
-プレイヤー2：Lキー連打</p>
-
-<button id="startBtn">スタート</button>
-
-<div class="container">
-  <div class="player">
-    <h2>プレイヤー1</h2>
-    <p>スコア：<span id="score1">0</span></p>
+<div class="arena">
+  <div class="player p1">
+    <div class="name">PLAYER 1</div>
+    <div class="score" id="score1">0</div>
+    <div class="bar">
+      <div class="fill fill1" id="bar1"></div>
+    </div>
   </div>
 
-  <div class="player">
-    <h2>プレイヤー2</h2>
-    <p>スコア：<span id="score2">0</span></p>
+  <div class="player p2">
+    <div class="name">PLAYER 2</div>
+    <div class="score" id="score2">0</div>
+    <div class="bar">
+      <div class="fill fill2" id="bar2"></div>
+    </div>
   </div>
 </div>
 
+<button id="startBtn">START</button>
+<div id="message"></div>
+
 <script>
-  let time = 10;
-  let playing = false;
-  let score1 = 0;
-  let score2 = 0;
-  let timer = null;
+let time = 10;
+let playing = false;
+let score1 = 0;
+let score2 = 0;
+let timer = null;
 
-  const timeText = document.getElementById("time");
-  const score1Text = document.getElementById("score1");
-  const score2Text = document.getElementById("score2");
-  const startBtn = document.getElementById("startBtn");
+const timeText = document.getElementById("time");
+const score1Text = document.getElementById("score1");
+const score2Text = document.getElementById("score2");
+const bar1 = document.getElementById("bar1");
+const bar2 = document.getElementById("bar2");
+const startBtn = document.getElementById("startBtn");
+const message = document.getElementById("message");
 
-  function startGame() {
-    time = 10;
-    score1 = 0;
-    score2 = 0;
-    playing = true;
+function startGame() {
+  time = 10;
+  score1 = 0;
+  score2 = 0;
+  playing = true;
+  message.textContent = "";
 
-    timeText.textContent = time;
-    score1Text.textContent = score1;
-    score2Text.textContent = score2;
+  updateUI();
+  startBtn.disabled = true;
 
-    startBtn.disabled = true;
+  timer = setInterval(() => {
+    time--;
+    updateUI();
 
-    timer = setInterval(() => {
-      time--;
-      timeText.textContent = time;
-
-      if (time <= 0) {
-        endGame();
-      }
-    }, 1000);
-  }
-
-  function endGame() {
-    playing = false;
-    clearInterval(timer);
-    startBtn.disabled = false;
-
-    let result;
-    if (score1 > score2) result = "🏆 プレイヤー1の勝ち！";
-    else if (score2 > score1) result = "🏆 プレイヤー2の勝ち！";
-    else result = "🤝 引き分け！";
-
-    alert(`終了！\nプレイヤー1: ${score1}\nプレイヤー2: ${score2}\n\n${result}`);
-  }
-
-  // キー入力処理
-  document.addEventListener("keydown", (e) => {
-    if (!playing) return;
-
-    if (e.key === "a" || e.key === "A") {
-      score1++;
-      score1Text.textContent = score1;
+    if (time <= 0) {
+      endGame();
     }
+  }, 1000);
+}
 
-    if (e.key === "l" || e.key === "L") {
-      score2++;
-      score2Text.textContent = score2;
-    }
-  });
+function endGame() {
+  playing = false;
+  clearInterval(timer);
+  startBtn.disabled = false;
 
-  startBtn.onclick = startGame;
+  if (score1 > score2) message.textContent = "🏆 PLAYER 1 WIN!";
+  else if (score2 > score1) message.textContent = "🏆 PLAYER 2 WIN!";
+  else message.textContent = "🤝 DRAW!";
+}
 
-  // Enterキーでもスタートできる
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !playing) {
-      startGame();
-    }
-  });
+function updateUI() {
+  timeText.textContent = time;
+  score1Text.textContent = score1;
+  score2Text.textContent = score2;
+
+  const total = score1 + score2 || 1;
+  bar1.style.width = (score1 / total * 100) + "%";
+  bar2.style.width = (score2 / total * 100) + "%";
+}
+
+// キー入力
+document.addEventListener("keydown", e => {
+  if (!playing) return;
+
+  if (e.key === "a" || e.key === "A") score1++;
+  if (e.key === "l" || e.key === "L") score2++;
+
+  updateUI();
+});
+
+// Enterでスタート
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !playing) startGame();
+});
+
+startBtn.onclick = startGame;
 </script>
 
 </body>
