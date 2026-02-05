@@ -46,14 +46,8 @@
   .p1 { border-color: #ff4444; box-shadow: 0 0 20px rgba(255,0,0,0.6); }
   .p2 { border-color: #4488ff; box-shadow: 0 0 20px rgba(0,128,255,0.6); }
 
-  .name {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-
-  .score {
-    font-size: 30px;
-  }
+  .name { font-size: 24px; margin-bottom: 10px; }
+  .score { font-size: 30px; }
 
   .bar {
     width: 100%;
@@ -64,12 +58,7 @@
     margin-top: 15px;
   }
 
-  .fill {
-    height: 100%;
-    width: 0%;
-    transition: width 0.1s;
-  }
-
+  .fill { height: 100%; width: 0%; transition: width 0.1s; }
   .fill1 { background: linear-gradient(90deg,#ff0000,#ffaa00); }
   .fill2 { background: linear-gradient(90deg,#00aaff,#00ffea); }
 
@@ -83,41 +72,88 @@
     cursor: pointer;
   }
 
-  #message {
-    margin-top: 30px;
-    font-size: 28px;
-    text-shadow: 0 0 10px #fff;
+  /* カウントダウン表示 */
+  #countdown {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 120px;
+    font-weight: bold;
+    color: #ff0;
+    text-shadow: 0 0 20px #fff;
+    z-index: 10;
+  }
+
+  /* 勝利画面 */
+  #resultScreen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  #resultScreen h2 {
+    font-size: 50px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px gold;
+  }
+
+  #resultScreen p {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  #restartBtn {
+    font-size: 22px;
+    padding: 10px 40px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(90deg,#ff0,#f80);
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 
 <h1>KEY RAPID BATTLE</h1>
-<div id="info">
-  プレイヤー1：Aキー ／ プレイヤー2：Lキー
-</div>
+<div id="info">プレイヤー1：Aキー ／ プレイヤー2：Lキー</div>
 <div id="time">10</div>
 
 <div class="arena">
   <div class="player p1">
     <div class="name">PLAYER 1</div>
     <div class="score" id="score1">0</div>
-    <div class="bar">
-      <div class="fill fill1" id="bar1"></div>
-    </div>
+    <div class="bar"><div class="fill fill1" id="bar1"></div></div>
   </div>
 
   <div class="player p2">
     <div class="name">PLAYER 2</div>
     <div class="score" id="score2">0</div>
-    <div class="bar">
-      <div class="fill fill2" id="bar2"></div>
-    </div>
+    <div class="bar"><div class="fill fill2" id="bar2"></div></div>
   </div>
 </div>
 
 <button id="startBtn">START</button>
-<div id="message"></div>
+
+<!-- カウントダウン -->
+<div id="countdown"></div>
+
+<!-- 勝利画面 -->
+<div id="resultScreen">
+  <h2 id="resultTitle"></h2>
+  <p id="resultScore"></p>
+  <button id="restartBtn">RESTART</button>
+</div>
 
 <script>
 let time = 10;
@@ -126,11 +162,7 @@ let score1 = 0;
 let score2 = 0;
 let timer = null;
 
-// 押しっぱなし防止用フラグ
-let keyState = {
-  a: false,
-  l: false
-};
+let keyState = { a:false, l:false };
 
 const timeText = document.getElementById("time");
 const score1Text = document.getElementById("score1");
@@ -138,28 +170,53 @@ const score2Text = document.getElementById("score2");
 const bar1 = document.getElementById("bar1");
 const bar2 = document.getElementById("bar2");
 const startBtn = document.getElementById("startBtn");
-const message = document.getElementById("message");
+
+const countdown = document.getElementById("countdown");
+
+const resultScreen = document.getElementById("resultScreen");
+const resultTitle = document.getElementById("resultTitle");
+const resultScore = document.getElementById("resultScore");
+const restartBtn = document.getElementById("restartBtn");
+
+function startGameWithCountdown() {
+  startBtn.disabled = true;
+  resultScreen.style.display = "none";
+
+  let count = 3;
+  countdown.textContent = count;
+  countdown.style.display = "flex";
+
+  const cdTimer = setInterval(() => {
+    count--;
+
+    if (count > 0) {
+      countdown.textContent = count;
+    } else {
+      countdown.textContent = "GO!";
+      clearInterval(cdTimer);
+
+      setTimeout(() => {
+        countdown.style.display = "none";
+        startGame();
+      }, 1000);
+    }
+  }, 1000);
+}
 
 function startGame() {
   time = 10;
   score1 = 0;
   score2 = 0;
   playing = true;
-  message.textContent = "";
-
   keyState.a = false;
   keyState.l = false;
 
   updateUI();
-  startBtn.disabled = true;
 
   timer = setInterval(() => {
     time--;
     updateUI();
-
-    if (time <= 0) {
-      endGame();
-    }
+    if (time <= 0) endGame();
   }, 1000);
 }
 
@@ -168,9 +225,12 @@ function endGame() {
   clearInterval(timer);
   startBtn.disabled = false;
 
-  if (score1 > score2) message.textContent = "🏆 PLAYER 1 WIN!";
-  else if (score2 > score1) message.textContent = "🏆 PLAYER 2 WIN!";
-  else message.textContent = "🤝 DRAW!";
+  if (score1 > score2) resultTitle.textContent = "PLAYER 1 WIN!";
+  else if (score2 > score1) resultTitle.textContent = "PLAYER 2 WIN!";
+  else resultTitle.textContent = "DRAW!";
+
+  resultScore.textContent = `P1: ${score1}  /  P2: ${score2}`;
+  resultScreen.style.display = "flex";
 }
 
 function updateUI() {
@@ -183,7 +243,7 @@ function updateUI() {
   bar2.style.width = (score2 / total * 100) + "%";
 }
 
-// キーを押した瞬間だけカウント
+// 押しっぱなし防止つきキー入力
 document.addEventListener("keydown", e => {
   if (!playing) return;
 
@@ -200,18 +260,18 @@ document.addEventListener("keydown", e => {
   updateUI();
 });
 
-// キーを離したら「次は押せる」状態に戻す
 document.addEventListener("keyup", e => {
   if (e.key === "a" || e.key === "A") keyState.a = false;
   if (e.key === "l" || e.key === "L") keyState.l = false;
 });
 
-// Enterでスタート
+// Enterキーでスタート
 document.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !playing) startGame();
+  if (e.key === "Enter" && !playing) startGameWithCountdown();
 });
 
-startBtn.onclick = startGame;
+startBtn.onclick = startGameWithCountdown;
+restartBtn.onclick = startGameWithCountdown;
 </script>
 
 </body>
