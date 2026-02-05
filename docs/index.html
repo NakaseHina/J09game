@@ -126,6 +126,12 @@ let score1 = 0;
 let score2 = 0;
 let timer = null;
 
+// 押しっぱなし防止用フラグ
+let keyState = {
+  a: false,
+  l: false
+};
+
 const timeText = document.getElementById("time");
 const score1Text = document.getElementById("score1");
 const score2Text = document.getElementById("score2");
@@ -140,6 +146,9 @@ function startGame() {
   score2 = 0;
   playing = true;
   message.textContent = "";
+
+  keyState.a = false;
+  keyState.l = false;
 
   updateUI();
   startBtn.disabled = true;
@@ -174,14 +183,27 @@ function updateUI() {
   bar2.style.width = (score2 / total * 100) + "%";
 }
 
-// キー入力
+// キーを押した瞬間だけカウント
 document.addEventListener("keydown", e => {
   if (!playing) return;
 
-  if (e.key === "a" || e.key === "A") score1++;
-  if (e.key === "l" || e.key === "L") score2++;
+  if ((e.key === "a" || e.key === "A") && !keyState.a) {
+    score1++;
+    keyState.a = true;
+  }
+
+  if ((e.key === "l" || e.key === "L") && !keyState.l) {
+    score2++;
+    keyState.l = true;
+  }
 
   updateUI();
+});
+
+// キーを離したら「次は押せる」状態に戻す
+document.addEventListener("keyup", e => {
+  if (e.key === "a" || e.key === "A") keyState.a = false;
+  if (e.key === "l" || e.key === "L") keyState.l = false;
 });
 
 // Enterでスタート
